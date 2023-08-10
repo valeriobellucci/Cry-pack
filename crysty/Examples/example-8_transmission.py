@@ -10,9 +10,9 @@ Created on Tue Aug  8 00:05:41 2023
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
-from utility import transmitted_wavefield, intensity
-from objects import (EllipseImageEnsemble, MaterialRefractiveIndex, 
-                     rotate_points3D)
+from crysty.utility import transmitted_wavefield, intensity
+from crysty.objects import (EllipseImageEnsemble, MaterialRefractiveIndex, 
+                            rotate_points3D, make_random_3Dspheres)
 
 
 #%%
@@ -20,9 +20,11 @@ from objects import (EllipseImageEnsemble, MaterialRefractiveIndex,
 Load a dataset representing an ensemble of speres in 3D space.
 """
 
-# Load data from the specified text file into a pandas DataFrame. 
-# The data is tab-separated.
-arr = pd.read_csv('3D-spheres/3D-spheres.txt', sep='\t')
+# Generate a pandas DataFrame with random 3D spheres data.
+# The function will generate 20 random spheres with:
+# - x, y, z coordinates ranging from -100 to 100
+# - diameters ranging from 20 to 30
+arr = make_random_3Dspheres(20, 100, (20, 30))
 
 # Extract X, Z, and Y columns and store them as a separate DataFrame called 'positions'
 positions = arr[['X','Z','Y']]
@@ -76,7 +78,7 @@ the corresponding intensity.
 energy_eV = 12_000
 
 # Initialize a material using its refractive index data from the given file path.
-material = MaterialRefractiveIndex('Materials/refractive-index_soda-lime-glass.txt')
+material = MaterialRefractiveIndex('refractive-index_soda-lime-glass.txt')
 
 # Obtain the refractive index of the material for the specified energy.
 refractive_index = material.get_refractive_index(energy_eV)
@@ -96,15 +98,13 @@ plt.imshow(transmitted_intensity)
 plt.show()
 
 # Extract a smaller section from the transmitted intensity for detailed viewing.
-zoom = transmitted_intensity[200:300, 300:400]
+zoom = transmitted_intensity[300:500, 300:500]
 plt.figure(figsize = (7,7))
 plt.imshow(zoom)
 
 # Define the slice of the image over which to compute the section.
-yc = 20
-yh = 10
-xc = 50
-xw = 100
+xc, yc = (100, 100) # center of the splice
+xw, yh = (200, 10) # width and height of the slice
 
 # Draw a rectangle on the zoom image to represent the section computed for the line plot.
 # Rectangle coordinates: (x_start, y_start), width, height

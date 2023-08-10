@@ -1,9 +1,0 @@
-- bragg_shift_o is almost the same as bragg_shift_os, which is almost the same as bragg_shift_hs, lot or repetition in general
-- sometimes denumerator, sometimes denominator
-- global variables
-- darwin_oc, darwin_os could be realized by one function and keyword parameter
-  grazing_correction=True|False
-- unused functions, e.g. A_crystal_symmetric, etc.
-- function names should be verbs, e.g. reflectivity_entrance -> compute_entrance_reflectivity, or use classes and properties instead
-- use the quantities package, no arcsec function required
-- convert material to a class and all the functions which use it to its methods and properties, e.g. the density function

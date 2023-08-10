@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Created on Tue Aug  8 00:05:41 2023
 
@@ -13,14 +11,16 @@ representing an ensemble of speres in 3D space
 # Import necessary libraries
 import pandas as pd
 import matplotlib.pyplot as plt
+from crysty.objects import  make_random_3Dspheres
+                    
 
-#%%
+# Generate a pandas DataFrame with random 3D spheres data.
+# The function will generate 5 random spheres with:
+# - x, y, z coordinates ranging from -100 to 100
+# - diameters ranging from 20 to 40
+arr = make_random_3Dspheres(5, 100, (20, 40))
 
-# Load data from the specified text file into a pandas DataFrame. 
-# The data is tab-separated.
-arr = pd.read_csv('3D-spheres/3D-spheres.txt', sep='\t')
-
-# Display the loaded data
+# Display the generated DataFrame to the console
 print(arr)
 
 # Extract X, Z, and Y columns and store them as a separate DataFrame called 'positions'

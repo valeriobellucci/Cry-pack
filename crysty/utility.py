@@ -316,13 +316,16 @@ def make_gauss2D_propagator(n, sigma=1, pixel_size=1, oversampling=1):
     return np.fft.fft2(np.fft.fftshift(gauss))
 
 
-def section(img, yc, yh, xc, xw, vertical=False, cmap='gray'):
+def section(img, center, size, vertical=False, cmap='gray', 
+            vmin=None, vmax=None):
     """
     Plot a section of an image with a rectangle indicating the sliced region 
     and then plots the averaged line profile of that region.
     
     Parameters:
     - img (numpy array): 2D array representing the image.
+    - center (tuple or array): (xc, yc) coordinate of the center of the section.
+    - size (tuple or array): (xw, yh) width and height of the section.
     - yc (float): Center y-coordinate of the slice.
     - yh (float): Height of the slice.
     - xc (float): Center x-coordinate of the slice.
@@ -333,10 +336,19 @@ def section(img, yc, yh, xc, xw, vertical=False, cmap='gray'):
     Returns:
     None
     """
+    # unpacking data about the section.
+    xc, yc = center
+    xw, yh = size
+    
+    # make sure that the coordinates are integers.
+    xc = int(xc)
+    yc = int(yc)
+    xw = int(xw)
+    yh = int(yh)
     
     # Display the provided image.
     plt.figure(figsize=(7,7))
-    plt.imshow(img, cmap=cmap)
+    plt.imshow(img, cmap=cmap, vmin=vmin, vmax=vmax)
     
     # Draw a rectangle on the image to represent the section computed for the line plot.
     # Rectangle coordinates: (x_start, y_start), width, height

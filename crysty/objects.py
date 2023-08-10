@@ -7,12 +7,16 @@ Created on Mon Aug  7 15:54:23 2023
 """
 
 import numpy as np
-import quantities as q
-from utility import make_couple, wavelength
 import pyopencl.array as cl_array
 import math
 from scipy.interpolate import interp1d
 import pandas as pd
+import os
+# Deals with various types of I/O (input/output). 
+import io
+# find and access resources inside packages.
+from pkg_resources import resource_string # gets a resource from a package
+
 
 def rotation_matrix(axis, theta):
     """
@@ -192,8 +196,9 @@ class EllipseImageEnsemble:
         return img
 
 
+
 class MaterialRefractiveIndex:
-    def __init__(self, file_path):
+    def __init__(self, file_name, file_path=None):
         """
         Initialize the MaterialRefractiveIndex with data from a file.
         Get the table of refractive index (Delta, Beta) vs Energy (eV) 
@@ -201,8 +206,19 @@ class MaterialRefractiveIndex:
         :param file_path: Path to the .txt file containing energy, delta, and beta values.
         """
         # Read the data from the file using pandas
-        df = pd.read_csv(file_path, sep='\s+', skiprows=2, names=['Energy', 'Delta', 'Beta'])
+        if file_path is not None:
+            full_path = os.path.join(file_path, file_name)
+            df = pd.read_csv(full_path, sep='\s+', skiprows=2, 
+                             names=['Energy', 'Delta', 'Beta'])  
+        else:
+            data = resource_string('crysty.materials', file_name)
+            # The 'StringIO' class allows us to treat strings as file-like objects.
+            buffer = io.StringIO(data.decode('ISO-8859-1'))
+            df = pd.read_csv(buffer, sep='\s+', skiprows=2, 
+                             names=['Energy', 'Delta', 'Beta'])  # Assuming the data is tab-separated
 
+        
+        
         # Extract the data
         self.energy = df['Energy'].values
         self.delta = df['Delta'].values
@@ -255,6 +271,35 @@ def pyopencl_array_from_numpy(data, queue=None):
     
     else:
         raise TypeError('Unsupported data type {}'.format(type(data)))
+
+
+def make_random_3Dspheres(n, xyz_range, diameter):
+    """
+    n (int): number of points
+    xyz_range (int): max +- xyz coordinates 
+    radius (int, float, tuple, array): radius of the spheres, can be fixed or 
+                                in a range (r_min, rmax)
+    
+    """
+
+    # Generate random data based on the defined ranges
+    x, y, z = [np.random.randint(-xyz_range, xyz_range + 1, n) for _ in range(3)]
+    
+    if isinstance(diameter, (int, float)):
+        diameter_array = np.full(n, diameter)
+    elif isinstance(diameter, (tuple, list)) and len(diameter) == 2:
+        diameter_array = np.random.randint(diameter[0], diameter[1] + 1, n)
+    else:
+        raise ValueError("Radius should be either a fixed value (int/float) or a tuple of range (int, int)")
+    
+    # Create DataFrame
+    dataframe = pd.DataFrame({
+                            'X': x,
+                            'Y': y,
+                            'Z': z,
+                            'diameter': diameter_array
+                            })
+    return dataframe
 
 
 pass

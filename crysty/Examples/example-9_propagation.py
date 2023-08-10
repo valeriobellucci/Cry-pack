@@ -12,10 +12,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.ndimage import gaussian_filter
 from skimage.transform import resize
-from utility import (transmitted_wavefield, free_space_propagator, 
-                    intensity, section)
-from objects import (EllipseImageEnsemble, MaterialRefractiveIndex, 
-                     rotate_points3D)
+from crysty.utility import (transmitted_wavefield, free_space_propagator, 
+                            intensity, section)
+from crysty.objects import (EllipseImageEnsemble, MaterialRefractiveIndex, 
+                            rotate_points3D, make_random_3Dspheres)
 
 
 #%%
@@ -23,9 +23,11 @@ from objects import (EllipseImageEnsemble, MaterialRefractiveIndex,
 Load a dataset representing an ensemble of speres in 3D space.
 """
 
-# Load data from the specified text file into a pandas DataFrame. 
-# The data is tab-separated.
-arr = pd.read_csv('3D-spheres/3D-spheres.txt', sep='\t')
+# Generate a pandas DataFrame with random 3D spheres data.
+# The function will generate 20 random spheres with:
+# - x, y, z coordinates ranging from -100 to 100
+# - diameters ranging from 20 to 30
+arr = make_random_3Dspheres(20, 100, (20, 30))
 
 # Extract X, Z, and Y columns and store them as a separate DataFrame called 'positions'
 positions = arr[['X','Z','Y']]
@@ -76,7 +78,7 @@ It then calculates the transmitted wavefield through an object.
 energy_eV = 12_000 # Photon energy (eV)
 
 # Initialize a material using its refractive index data from the given file path.
-material = MaterialRefractiveIndex('Materials/refractive-index_soda-lime-glass.txt')
+material = MaterialRefractiveIndex('refractive-index_soda-lime-glass.txt')
 
 # Obtain the refractive index of the material for the specified energy.
 refractive_index = material.get_refractive_index(energy_eV)
@@ -94,11 +96,11 @@ plt.show()
 
 # Extract a smaller section from the transmitted intensity for detailed viewing.
 #zoom = transmitted_intensity[200:300, 300:400] # oversampling=2
-zoom = transmitted_intensity[1000:1500, 1500:2000] # oversampling=10
+zoom = transmitted_intensity[1000:3000, 1000:3000] # oversampling=10
 
 # Show a section of the image
 #section(zoom,25,10,50,100) # oversampling=2
-section(zoom,125,50,250,500) # oversampling=10
+section(zoom,[1000, 750],[2000,50]) # oversampling=10
 
 
 #%%
@@ -126,15 +128,15 @@ propagated_wavefield = np.fft.ifft2(result_fft)
 
 # Calculate the intensity of the propagated wavefield
 propagated_intensity = intensity(propagated_wavefield)
-
+#%%
 # Display the propagated intensity
 plt.figure(figsize=(5,5))
-plt.imshow(propagated_intensity, vmin=0., vmax=1., cmap='gray')
+plt.imshow(propagated_intensity, vmin=0.5, vmax=1., cmap='gray')
 plt.show()
 
 # Extract a smaller section from the transmitted intensity for detailed viewing
-zoom = propagated_intensity[1000:1500, 1500:2000] 
-section(zoom, 125, 50, 250, 500)  # Display a section of the zoomed-in image
+zoom = propagated_intensity[1000:3000, 1000:3000] 
+section(zoom, [1000, 750],[2000,50], vmin=0.5, vmax=1., cmap='gray')  # Display a section of the zoomed-in image
 
 #%%
 """
@@ -160,5 +162,5 @@ plt.imshow(img_downsampled, vmin=0., vmax=1., cmap='gray')
 plt.show()
 
 # Extract a smaller section from the downsampled image for detailed viewing
-zoom = img_downsampled[100:150, 150:200]
-section(zoom, 12, 5, 25, 50)  # Display a section of the zoomed-in image
+zoom = img_downsampled[100:300, 100:300]
+section(zoom, [100,100], [200,20])  # Display a section of the zoomed-in image

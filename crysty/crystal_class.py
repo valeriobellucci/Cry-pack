@@ -1,16 +1,16 @@
-# -*- coding: utf-8 -*-
 """
-Created on Tue Jun  5 09:36:45 2018
-
 @author: Valerio
 """
 
-from cry_functions import (compute_crystal_frequency_entrance, compute_crystal_frequency_exit,
-                           bragg_angle, width_angle_o, magnification, asymmetry_best)
+from crysty.crystal_functions import (compute_crystal_frequency_entrance, 
+                               compute_crystal_frequency_exit,
+                               bragg_angle, width_angle_o, magnification, 
+                               asymmetry_best)
 import numpy as np
 import quantities as q
 import pyopencl.array as cl_array
-from utility import (intensity, make_couple)
+from crysty.utility import (intensity, make_couple)
+from scipy.interpolate import interp2d, griddata
 
 
 
@@ -267,7 +267,7 @@ class Crystal():
             size = reflectivity.shape[0] 
             correction = np.where((reflectivity > 1.) | (reflectivity.round(3) == 0.)) 
             crystal_frequency_transfer[(reflectivity > 1.) | (reflectivity.round(3) == 0.)] \
-                = crystal_frequency_transfer[correction[0][size/2] - i, correction[1][size/2] - i]
+                = crystal_frequency_transfer[correction[0][size//2] - i, correction[1][size//2] - i]
                 
             reflectivity = intensity(crystal_frequency_transfer)
             i += 1
@@ -362,18 +362,50 @@ class Crystal():
         # Fix the singularity issue
         reflectivity = intensity(crystal_frequency_transfer)
         i = 0
-        while np.any((reflectivity > 1.) | (reflectivity.round(3) == 0.)):    
-            print ('Singularity issue found in crystalline transfer function. Try to solve: ', i)
-            size = reflectivity.shape[0] 
-            correction = np.where((reflectivity > 1.) | (reflectivity.round(3) == 0.)) 
-            crystal_frequency_transfer[(reflectivity > 1.) | (reflectivity.round(3) == 0.)] \
-                = crystal_frequency_transfer[correction[0][size/2] - i, correction[1][size/2] - i]
-                
+        max_attempts = 10  # set a maximum number of correction attempts
+        
+        # Generate a meshgrid for interpolation
+        x = np.arange(reflectivity.shape[1])
+        y = np.arange(reflectivity.shape[0])
+        
+        while np.any((reflectivity > 1.) | (reflectivity.round(3) == 0.)):
+            print('Singularity issue found in crystalline transfer function. Try to solve: ', i)
+            
+            # Find problematic indices
+            correction = np.where((reflectivity > 1.) | (reflectivity.round(3) == 0.))
+            
+            # Define points (excluding problematic ones)
+            points = np.column_stack((y[~correction[0]], x[~correction[1]]))
+            values = reflectivity[~correction[0], ~correction[1]]
+            
+            # Define grid points for interpolation
+            grid_y, grid_x = np.mgrid[0:reflectivity.shape[0], 0:reflectivity.shape[1]]
+            
+            # Perform interpolation
+            interpolated_values = griddata(points, values, (grid_y, grid_x), method='linear')
+            
+            # Replace NaN values with original data (this happens at borders or if there are too few points)
+            interpolated_values[np.isnan(interpolated_values)] = reflectivity[np.isnan(interpolated_values)]
+            
+            # Replace problematic values
+            crystal_frequency_transfer[correction] = interpolated_values[correction]
+            
             reflectivity = intensity(crystal_frequency_transfer)
+            
             i += 1
+            if i > max_attempts:
+                print("Warning: Maximum correction attempts reached. Some singularities may remain.")
+                break
 
         return crystal_frequency_transfer
 
 
-
 pass
+
+
+
+
+
+
+
+

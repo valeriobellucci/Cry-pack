@@ -11,7 +11,7 @@ Test image composed of just two spheres
 
 # Import necessary libraries
 import matplotlib.pyplot as plt
-from objects import create_ellipse_image as create_ellipse
+from crysty.objects import create_ellipse_image as create_ellipse
 
 #%%
 

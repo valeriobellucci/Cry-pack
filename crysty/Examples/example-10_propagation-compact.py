@@ -10,10 +10,10 @@ Created on Tue Aug  8 00:05:41 2023
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
-from utility import (transmitted_wavefield, 
+from crysty.utility import (transmitted_wavefield, 
                     intensity, section, Propagate)
-from objects import (EllipseImageEnsemble, MaterialRefractiveIndex, 
-                     rotate_points3D)
+from crysty.objects import (EllipseImageEnsemble, MaterialRefractiveIndex, 
+                     rotate_points3D, make_random_3Dspheres)
 
 
 #%%
@@ -21,9 +21,11 @@ from objects import (EllipseImageEnsemble, MaterialRefractiveIndex,
 Load a dataset representing an ensemble of speres in 3D space.
 """
 
-# Load data from the specified text file into a pandas DataFrame. 
-# The data is tab-separated.
-arr = pd.read_csv('3D-spheres/3D-spheres.txt', sep='\t')
+# Generate a pandas DataFrame with random 3D spheres data.
+# The function will generate 20 random spheres with:
+# - x, y, z coordinates ranging from -100 to 100
+# - diameters ranging from 20 to 30
+arr = make_random_3Dspheres(20, 100, (20, 30))
 
 # Extract X, Z, and Y columns and store them as a separate DataFrame called 'positions'
 positions = arr[['X','Z','Y']]
@@ -74,7 +76,7 @@ It then calculates the transmitted wavefield through an object.
 energy_eV = 12_000 # Photon energy (eV)
 
 # Initialize a material using its refractive index data from the given file path.
-material = MaterialRefractiveIndex('Materials/refractive-index_soda-lime-glass.txt')
+material = MaterialRefractiveIndex('refractive-index_soda-lime-glass.txt')
 
 # Obtain the refractive index of the material for the specified energy.
 refractive_index = material.get_refractive_index(energy_eV)
@@ -92,11 +94,11 @@ plt.show()
 
 # Extract a smaller section from the transmitted intensity for detailed viewing.
 #zoom = transmitted_intensity[200:300, 300:400] # oversampling=2
-zoom = transmitted_intensity[1000:1500, 1500:2000] # oversampling=10
+zoom = transmitted_intensity[2000:4000, 2000:4000] # oversampling=10
 
 # Show a section of the image
 #section(zoom,25,10,50,100) # oversampling=2
-section(zoom,125,50,250,500) # oversampling=10
+section(zoom, [1000,1000], [2000,50]) # oversampling=10
 
 
 #%%
@@ -121,5 +123,5 @@ plt.imshow(img_result, vmin=0., vmax=1., cmap='gray')
 plt.show()
 
 # Extract a smaller section from the downsampled image for detailed viewing
-zoom = img_result[100:150, 150:200]
-section(zoom, 12, 5, 25, 50)  # Display a section of the zoomed-in image
+zoom = img_result[200:400, 200:400]
+section(zoom, [100,100], [200,10])  # Display a section of the zoomed-in image

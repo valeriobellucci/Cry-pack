@@ -9,21 +9,23 @@ Created on Tue Aug  8 00:05:41 2023
 # Import necessary libraries
 import pandas as pd
 import matplotlib.pyplot as plt
-from objects import rotate_points3D
+from crysty.objects import rotate_points3D, make_random_3Dspheres
 
 
 #%%
 """
-This script import an array of data representing an ensemble of speres in 3D space.
+This script creates an array of data representing an ensemble of speres in 3D space.
 Then, it rotates them to simulate a detector positioned over a certain direction.
 Finally, it gives a rough visualization. 
 """
 
-# Load data from the specified text file into a pandas DataFrame. 
-# The data is tab-separated.
-arr = pd.read_csv('3D-spheres/3D-spheres.txt', sep='\t')
+# Generate a pandas DataFrame with random 3D spheres data.
+# The function will generate 5 random spheres with:
+# - x, y, z coordinates ranging from -100 to 100
+# - diameters ranging from 20 to 30
+arr = make_random_3Dspheres(5, 100, (20, 30))
 
-# Display the loaded data
+# Display the generated DataFrame to the console
 print(arr)
 
 # Extract X, Z, and Y columns and store them as a separate DataFrame called 'positions'

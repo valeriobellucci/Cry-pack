@@ -14,6 +14,12 @@ import numpy as np
 import scipy.constants as sci
 # Optimizing functions
 import scipy.optimize as opt
+# Deals with various types of I/O (input/output). 
+import io
+# find and access resources inside packages.
+from pkg_resources import resource_string # gets a resource from a package
+import pandas as pd
+
 
 """ Program for calculating crystalline functions.
 
@@ -91,27 +97,50 @@ def printmatrix(matrix):
         print(i)
 
 
-def txt_to_list(address):
-    """ Import a txt file to a NumPy array """
-    return np.loadtxt(address, dtype=object, encoding='ISO-8859-1')
+def crysty_txt_to_list(crysty_subfolder, file_name, pandas=False):
+    """ Import from crysty.materials a txt content to a NumPy array """
+    data = resource_string(f'crysty.{crysty_subfolder}', file_name)
+    
+    # The 'StringIO' class allows us to treat strings as file-like objects.
+    buffer = io.StringIO(data.decode('ISO-8859-1'))
+    load = np.loadtxt(buffer, dtype=object, encoding='ISO-8859-1')
+    
+    if pandas is True:
+        load = pd.read_csv(buffer, sep='\t')  # Assuming the data is tab-separated
+
+    # Check if the content is just numbers by trying to convert to float64
+    try:
+        load = load.astype(np.float64)
+    except ValueError:
+        pass  # If not all values are convertible to float64, don't convert
+
+    return load
+
+
+def materials_txt_to_list(file_name):
+    """ Import from crysty.materials a txt content to a NumPy array """
+
+    return crysty_txt_to_list("materials", file_name)
 
 
 """ Import txt files containing crystalline constants """
 current_directory = os.getcwd()
 
+
 """ Some materials constants """
-costantim = txt_to_list(f"{current_directory}/Materials/materials constants.txt")
+costantim = materials_txt_to_list('materials_constants.txt')
+
 
 """ Define a dictionary of materials """
 MATERIALS = {
     # unit_cell describes the position of the atoms in the unit cell 
     'Si': {
         'index': 0,
-        'unit_cell_vectors': txt_to_list(f"{current_directory}/Materials/unit cell Si.txt")
+        'unit_cell_vectors': materials_txt_to_list("unit cell Si.txt")
     },
     'Ge': {
         'index': 1,
-        'unit_cell_vectors': txt_to_list(f"{current_directory}/Materials/unit cell Ge.txt")
+        'unit_cell_vectors': materials_txt_to_list("unit cell Ge.txt")
     }
 }
 
@@ -120,15 +149,15 @@ form_factor_real_Si220 = 8.66557
 form_factor_real_Si111 = 10.3811
 form_factor_real_Ge220 = 23.7972
 form_factor_real_Ge111 = 27.3664
-form_factor_imag_Si = np.loadtxt(f"{current_directory}/Materials/f2_Si_50keV.txt")
-form_factor_imag_Ge = np.loadtxt(f"{current_directory}/Materials/f2_Ge_50keV.txt")
+form_factor_imag_Si = materials_txt_to_list("f2_Si_50keV.txt")
+form_factor_imag_Ge = materials_txt_to_list("f2_Ge_50keV.txt")
 
 
 """ Polarizability of materials in the forward direction - real and imaginary part """
-chio_Si_real = np.loadtxt(f"{current_directory}/Materials/chio_Si_real.txt")
-chio_Si_imag = np.loadtxt(f"{current_directory}/Materials/chio_Si_imag.txt")
-chio_Ge_real = np.loadtxt(f"{current_directory}/Materials/chio_Ge_real.txt")
-chio_Ge_imag = np.loadtxt(f"{current_directory}/Materials/chio_Ge_imag.txt")
+chio_Si_real = materials_txt_to_list("chio_Si_real.txt")
+chio_Si_imag = materials_txt_to_list("chio_Si_imag.txt")
+chio_Ge_real = materials_txt_to_list("chio_Ge_real.txt")
+chio_Ge_imag = materials_txt_to_list("chio_Ge_imag.txt")
 
 
 """ Crystalline constants

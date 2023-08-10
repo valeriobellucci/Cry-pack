@@ -82,7 +82,7 @@ class Beamline:
                                  axis=0, dtype=bool)
         # Filters the beamline components that correspond to certain keywords.
         self.beamline_components = self.beamline_components[self.logic_mask]
-        print 'The beamline is composed of: ', self.beamline_components
+        print('The beamline is composed of: ', self.beamline_components)
 
         """ Build the beamline according to the beamline components and the components specifications 
             in __init__ or default components specifications.
@@ -175,11 +175,11 @@ class Beamline:
                 | (self.sample_type == '4_spheres_scaled') | (self.sample_type == '4_disks_scaled') 
                 | (self.sample_type == 'sphere_generic') | (self.sample_type == 'disk_generic') ):
                 self.sample_size = self.sample.radius
-            print 'The Fresnel number is: ', self.fresnel_number 
+            print('The Fresnel number is: ', self.fresnel_number)
             if self.fresnel_number < 1.:
-                print '    Far-field regime'
+                print('    Far-field regime')
             elif self.fresnel_number > 1.:
-                print '    Near-field regime'
+                print('    Near-field regime')
     
     
     def run(self, save = False, save_path = '', save_format = '.tiff', computation = 'syris', 
@@ -216,7 +216,7 @@ class Beamline:
                 False, that nth crystal is removed from propagation. If one of the entrances is 0, that 0 
                 means False. If one of the entrances is 1, that one means True.
         """
-        print 'Runs beamline composed of: ', self.beamline_components
+        print('Runs beamline composed of: ', self.beamline_components)
         
         
         def save_specifications():
@@ -262,15 +262,15 @@ class Beamline:
 
 
         # RUNS THE BEAMLINE
-        print 'CALCULATING: '        
+        print('CALCULATING: ')        
         # Source        
         if self.source_type == None:
             self.s_0 = np.ones((n,n))
             self.s_0_fs = fft2c(self.s_0)
         else:
-            print 'source transfer function'
+            print('source transfer function')
             self.s_0 = self.source.transfer(energy)
-            print 'source transfer function in fourier space'
+            print('source transfer function in fourier space')
             self.s_0_fs = fft2c(self.s_0)
         save_run(self.s_0, 'source_transfer')
         save_run(self.s_0_fs, 'source_transfer_fourier_space')
@@ -283,17 +283,17 @@ class Beamline:
         else:
             if np.any(self.beamline_components == 'mono' ) or np.any(self.beamline_components == 'monochromator'):
                 if self.there_is_BM == False:
-                    print 'monochromator transfer function in fourier space '  
+                    print('monochromator transfer function in fourier space ') 
                     self.mono_0_fs = self.monochromator.transfer(Q_exit, energy)
                 elif self.there_is_BM == True:
-                    print 'monochromator transfer function in fourier space '  
+                    print('monochromator transfer function in fourier space ')  
                     self.mono_0_fs = self.monochromator.transfer(Q_magn, energy)
-                print 'monochromator transfer function in real space'
+                print('monochromator transfer function in real space')
                 self.mono_0 = ifft2c(self.mono_0_fs)
             elif np.any(self.beamline_components == 'mono_simple' ) or np.any(self.beamline_components == 'monochromator_simple'):
-                print 'monochromator transfer function in fourier space '  
+                print('monochromator transfer function in fourier space ')  
                 self.mono_0_fs = self.monochromator.transfer(energy)
-                print 'monochromator transfer function in real space'
+                print('monochromator transfer function in real space')
                 self.mono_0 = ifft2c(self.mono_0_fs)
             
         save_run(self.mono_0_fs, 'monochromator_transfer_fourier_space')
@@ -303,11 +303,11 @@ class Beamline:
         if self.distance_mono_sample == None:
             self.propagator_mono_sample_fs = 1.
         elif self.there_is_BM == False:
-            print 'propagator of the space between BM and detector (without Magnifier), in Fourier space'
+            print('propagator of the space between BM and detector (without Magnifier), in Fourier space')
             self.propagator_mono_sample_fs = self.space_mono_sample.propagator_after_BM(energy,
                                                                                         computation=computation)
         else:
-            print 'propagator of the space between the monochromator and the sample'
+            print('propagator of the space between the monochromator and the sample')
             self.propagator_mono_sample_fs = self.space_mono_sample.propagator_before_BM(energy,
                                                                                          computation=computation)        
         save_run(self.propagator_mono_sample_fs, 'space_propagator_between_mono_and_sample_fs')
@@ -320,14 +320,14 @@ class Beamline:
             self.u_0_fs = np.ones((n,n), dtype=np.complex64)
             self.u_0 = ifft2c(self.u_0_fs)
         else:
-            print 'object transfer function'
+            print('object transfer function')
             self.u_0 = self.sample.transfer(energy)
             self.sample_interaction = sample_interaction
             if self.sample_interaction == 'pure phase object': # Turns the sample in a pure phase object
                 self.u_0 = self.u_0 / np.absolute(self.u_0)
             elif self.sample_interaction == 'pure absorption object': # Turns the sample in a pure absorption object
                 self.u_0 = self.u_0 / phase(self.u_0)
-            print 'object transfer function in fourier space'
+            print('object transfer function in fourier space')
             self.u_0_fs = ifft2c(self.u_0)
         save_run(self.u_0, 'sample_transfer')
         save_run(self.u_0_fs, 'sample_transfer_fourier_space')
@@ -336,16 +336,16 @@ class Beamline:
         if self.distance_sample_BM == None:
             self.propagator_sample_BM_fs = 1.
         elif self.there_is_BM == False:
-            print 'propagator of the space between BM and detector (without Magnifier), in Fourier space'
+            print('propagator of the space between BM and detector (without Magnifier), in Fourier space')
             self.propagator_sample_BM_fs = self.space_sample_BM.propagator_after_BM(energy,
                                                                                     computation=computation)
         else:
-            print 'propagator of the space between sample and BM'
+            print('propagator of the space between sample and BM')
             self.propagator_sample_BM_fs = self.space_sample_BM.propagator_before_BM(energy,
                                                                                      computation=computation) 
         save_run(self.propagator_sample_BM_fs, 'space_propagator_between_sample_and_BM_fs')
         # Wavefield at the entrance of the BM, in Fourier space
-        print 'wavefield at the entrance of the BM, in Fourier space'
+        print('wavefield at the entrance of the BM, in Fourier space')
         self.u_before_BM_fs = ( fft2c(self.u_0 * 
                                         ifft2c(self.s_0_fs * self.mono_0_fs * self.propagator_mono_sample_fs)
                                         ) 
@@ -354,7 +354,7 @@ class Beamline:
         if (stop_before == 'BM') | (stop_before == 'Bragg Magnifier'): return              
         # Space inside the Bragg Magnifier
         if (self.there_is_BM == False) & (self.distance_inside_BM != None):
-            print 'propagator of the space in place of the Bragg Magnifier (without Magnifier), in Fourier space'
+            print('propagator of the space in place of the Bragg Magnifier (without Magnifier), in Fourier space')
             self.propagator_inside_BM_fs = self.space_inside_BM.propagator_after_BM(energy, computation=computation) 
         elif self.distance_inside_BM == None:
             self.propagator_inside_BM_fs = 1.
@@ -365,7 +365,7 @@ class Beamline:
         if self.there_is_BM == False:
             self.u_after_BM_fs = self.u_before_BM_fs * self.propagator_inside_BM_fs
         elif self.there_is_BM == True:
-            print 'wavefield after the BM'
+            print('wavefield after the BM')
             self.u_after_BM_fs = BraggMagnifier().wavefield(self.u_before_BM_fs, energy,
                                                             method = BM_propagation_method,
                                                             crystalline_transfer_functions=
@@ -385,20 +385,20 @@ class Beamline:
         if self.distance_BM_detector == None:
             self.propagator_BM_d_fs = 1.
         else:        
-            print 'propagator of the space between BM and detector, in Fourier space'
+            print('propagator of the space between BM and detector, in Fourier space')
             self.propagator_BM_d_fs = self.space_BM_detector.propagator_after_BM(energy,
                                                                                  computation=computation)
         save_run(self.propagator_BM_d_fs, 'space_propagator_between_BM_and_detector_fs')
         # Wavefield just before the detector, in Fourier space
-        print 'wavefield just before the detector, in Fourier space'
+        print('wavefield just before the detector, in Fourier space')
         self.u_d_fs = self.u_after_BM_fs * self.propagator_BM_d_fs   
         save_run(self.u_d_fs, 'Wavefield just before the detector, in Fourier space')        
         # Wavefield just before the detector, in real space
-        print 'wavefield just before the detector, in real space'
+        print('wavefield just before the detector, in real space')
         self.u_d = ifft2c(self.u_d_fs)
         save_run(self.u_d, 'Wavefield just before the detector, in real space')             
         # Intensity image just before the detector
-        print 'intensity image just before the detector'
+        print('intensity image just before the detector')
         self.i_d = intensity(self.u_d)
         save_run(self.i_d, 'Intensity image just before the detector')          
         if stop_before == 'detector': return      
@@ -408,10 +408,10 @@ class Beamline:
         if self.detector == None:
             self.recorded_image = self.i_d
         else:
-            print 'image recorded by the detector'
+            print('image recorded by the detector')
             self.recorded_image = self.detector.get_image(self.i_d, exp_time=exp_time)
         save_run(self.recorded_image, 'Image recorded by the detector')  
-        print '\n'
+        print('\n')
     
     def phantom_show_recorded_image(self):
         ''' Show the image recroded by the detector without plt.show(), so allowing to show multiple images. '''
